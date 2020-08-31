@@ -1,0 +1,74 @@
+{
+	"name": "coffeephp/failsafe-json",
+	"description": "Provides classes for handling (Fail-safe) JSON data.",
+	"license": "Apache-2.0",
+	"authors": [
+		{
+			"name": "Danny Damsky",
+			"email": "dannydamsky99@gmail.com"
+		}
+	],
+	"keywords": [
+		"coffeephp",
+		"coffee",
+		"php",
+		"serialized",
+		"php-serialized",
+		"binary",
+		"json",
+		"fail",
+		"safe",
+		"translator",
+		"serialize",
+		"unserialize",
+		"deserialize",
+		"serialization",
+		"unserialization",
+		"deserialization"
+	],
+	"require": {
+		"php": ">=7.4",
+		"ext-apcu": "*",
+		"ext-mbstring": "*",
+		"ext-json": "*",
+		"coffeephp/json": "1.*"
+	},
+	"require-dev": {
+		"roave/security-advisories": "dev-master",
+		"coffeephp/component-registry": "1.*",
+		"phpunit/phpunit": "9.*"
+	},
+	"autoload": {
+		"psr-4": {
+			"CoffeePhp\\FailsafeJson\\": "src/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"CoffeePhp\\FailsafeJson\\Test\\Integration\\": "test/Integration/",
+			"CoffeePhp\\FailsafeJson\\Test\\Unit\\": "test/Unit/",
+			"CoffeePhp\\Json\\Test\\": "vendor/coffeephp/json/test/"
+		}
+	},
+	"suggest": {
+		"coffeephp/component-registry": "For integration of the component with the CoffeePHP framework.",
+		"coffeephp/binary": "For the serializer interfaces to be bound to the PHP-serialized implementation."
+	},
+	"config": {
+		"sort-packages": true,
+		"optimize-autoloader": true,
+		"apcu-autoloader": true
+	},
+	"extra": {
+		"coffeephp": {
+			"registry": [
+				{
+					"registrar": "CoffeePhp\\FailsafeJson\\Integration\\FailsafeJsonComponentRegistrar",
+					"depends": [
+						"CoffeePhp\\Json\\Integration\\JsonComponentRegistrar"
+					]
+				}
+			]
+		}
+	}
+}
