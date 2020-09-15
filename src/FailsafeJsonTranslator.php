@@ -21,10 +21,9 @@
  * @since 2020-08-07
  */
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace CoffeePhp\FailsafeJson;
-
 
 use CoffeePhp\Json\Contract\JsonTranslatorInterface;
 use CoffeePhp\Json\Exception\JsonUnserializeException;
@@ -178,7 +177,7 @@ final class FailsafeJsonTranslator implements JsonTranslatorInterface
         } catch (Throwable $e) {
             throw new JsonUnserializeException(
                 "Failed to unserialize JSON string using failsafe method: {$e->getMessage()} ; String: $string",
-                $e->getCode(),
+                (int)$e->getCode(),
                 $e
             );
         }
@@ -197,6 +196,9 @@ final class FailsafeJsonTranslator implements JsonTranslatorInterface
         $array = $this->jsonTranslator->unserializeArray($string);
         array_walk_recursive(
             $array,
+            /**
+             * @param mixed $item
+             */
             static function (&$item): void {
                 if (is_string($item) && !empty($item)) {
                     $item = str_replace(self::ESCAPE_SEARCHES, self::ESCAPE_REPLACEMENTS, $item);
@@ -215,9 +217,9 @@ final class FailsafeJsonTranslator implements JsonTranslatorInterface
      */
     private function escapeDoubleQuotesInJsonString(string $string, string $replacement = "''"): string
     {
-        return preg_replace_callback(
+        return (string)preg_replace_callback(
             '/(?<!\\\\)(?:\\\\{2})*\\\\(?!\\\\)"/',
-            static fn(array $match): string => str_replace('\\"', $replacement, $match[0]),
+            static fn(array $match): string => str_replace('\\"', $replacement, (string)$match[0]),
             $string
         );
     }
@@ -230,7 +232,7 @@ final class FailsafeJsonTranslator implements JsonTranslatorInterface
      */
     private function convertToUtf8(string $string): string
     {
-        return preg_replace_callback(
+        return (string)preg_replace_callback(
             '/\\\\u([0-9a-fA-F]{4})/',
             static fn(array $match): string => mb_convert_encoding(pack('H*', $match[1]), 'UTF-8', 'UCS-2BE'),
             $string

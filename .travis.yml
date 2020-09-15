@@ -15,5 +15,4 @@ install:
   - composer install --prefer-dist
 
 script:
-  - vendor/bin/phpunit --testsuite=unit
-  - vendor/bin/phpunit --testsuite=integration
+  - composer coffeephp:exec:analyse
