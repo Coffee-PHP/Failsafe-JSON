@@ -254,4 +254,12 @@ final class FailsafeJsonTranslator implements JsonTranslatorInterface
     {
         return $this->jsonTranslator->serializeObject($class);
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function unserializeObject(string $string): object
+    {
+        return $this->jsonTranslator->unserializeObject($string);
+    }
 }
