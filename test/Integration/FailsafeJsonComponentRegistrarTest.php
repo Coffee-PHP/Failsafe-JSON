@@ -21,11 +21,11 @@
  * @since 2020-08-31
  */
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace CoffeePhp\FailsafeJson\Test\Integration;
 
-
+use CoffeePhp\ComponentRegistry\ComponentRegistry;
 use CoffeePhp\Di\Container;
 use CoffeePhp\FailsafeJson\FailsafeJsonTranslator;
 use CoffeePhp\FailsafeJson\Integration\FailsafeJsonComponentRegistrar;
@@ -34,10 +34,8 @@ use CoffeePhp\Json\Integration\JsonComponentRegistrar;
 use CoffeePhp\Json\JsonTranslator;
 use PHPUnit\Framework\TestCase;
 
-use function PHPUnit\Framework\assertFalse;
 use function PHPUnit\Framework\assertInstanceOf;
 use function PHPUnit\Framework\assertNotInstanceOf;
-use function PHPUnit\Framework\assertSame;
 use function PHPUnit\Framework\assertTrue;
 
 /**
@@ -56,10 +54,9 @@ final class FailsafeJsonComponentRegistrarTest extends TestCase
     public function testRegisterWithDependencies(): void
     {
         $di = new Container();
-        $jsonRegistrar = new JsonComponentRegistrar();
-        $jsonRegistrar->register($di);
-        $failsafeJsonRegistrar = new FailsafeJsonComponentRegistrar();
-        $failsafeJsonRegistrar->register($di);
+        $registry = new ComponentRegistry($di);
+        $registry->register(JsonComponentRegistrar::class);
+        $registry->register(FailsafeJsonComponentRegistrar::class);
 
         assertTrue(
             $di->has(JsonTranslatorInterface::class)
@@ -83,40 +80,8 @@ final class FailsafeJsonComponentRegistrarTest extends TestCase
             $di->get(JsonTranslator::class)
         );
 
-        assertSame(
-            $di->get(FailsafeJsonTranslator::class),
-            $di->get(JsonTranslatorInterface::class)
-        );
-    }
-
-    /**
-     * @see FailsafeJsonComponentRegistrar::register()
-     */
-    public function testRegisterWithoutDependencies(): void
-    {
-        $di = new Container();
-        $registrar = new FailsafeJsonComponentRegistrar();
-        $registrar->register($di);
-
-        assertTrue(
-            $di->has(JsonTranslatorInterface::class)
-        );
-
-        assertFalse(
-            $di->has(JsonTranslator::class)
-        );
-
-        assertTrue(
-            $di->has(FailsafeJsonTranslator::class)
-        );
-
-        assertInstanceOf(
+        assertNotInstanceOf(
             FailsafeJsonTranslator::class,
-            $di->get(FailsafeJsonTranslator::class)
-        );
-
-        assertSame(
-            $di->get(FailsafeJsonTranslator::class),
             $di->get(JsonTranslatorInterface::class)
         );
     }

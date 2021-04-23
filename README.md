@@ -1,5 +1,7 @@
 # Coffee PHP - Fail Safe JSON
 
+![Build](https://github.com/Coffee-PHP/Failsafe-JSON/workflows/Build/badge.svg)
+
 Provides classes for handling (Fail-safe) JSON data.
 
 ```

@@ -91,31 +91,31 @@ final class FailsafeJsonTranslator implements JsonTranslatorInterface
     /**
      * Dangerous character searches.
      *
-     * @var string[]
+     * @var array<int, string>
      */
     private const DANGEROUS_SEARCHES = [
         '\\\\',
         '\\',
         '\n',
-        "\n"
+        "\n",
     ];
 
     /**
      * Dangerous character replacements.
      *
-     * @var string[]
+     * @var array<int, string>
      */
     private const DANGEROUS_REPLACEMENTS = [
         self::BACKWARD_SLASH_ESCAPE_KEY,
         self::SINGLE_BACKWARD_SLASH_ESCAPE_KEY,
         self::UNESCAPED_NEWLINE_ESCAPE_KEY,
-        self::NEWLINE_ESCAPE_KEY
+        self::NEWLINE_ESCAPE_KEY,
     ];
 
     /**
      * Searches for escaped keys.
      *
-     * @var string[]
+     * @var array<int, string>
      */
     private const ESCAPE_SEARCHES = [
         self::DOUBLE_QUOTE_ESCAPE_KEY,
@@ -123,13 +123,13 @@ final class FailsafeJsonTranslator implements JsonTranslatorInterface
         self::BACKWARD_SLASH_ESCAPE_KEY,
         self::SINGLE_BACKWARD_SLASH_ESCAPE_KEY,
         self::NEWLINE_ESCAPE_KEY,
-        self::UNESCAPED_NEWLINE_ESCAPE_KEY
+        self::UNESCAPED_NEWLINE_ESCAPE_KEY,
     ];
 
     /**
      * Replacements for escaped keys.
      *
-     * @var string[]
+     * @var array<int, string>
      */
     private const ESCAPE_REPLACEMENTS = [
         '"',
@@ -137,18 +137,14 @@ final class FailsafeJsonTranslator implements JsonTranslatorInterface
         '\\\\',
         '\\',
         "\n",
-        '\n'
+        '\n',
     ];
-
-    private JsonTranslator $jsonTranslator;
 
     /**
      * FailsafeJsonTranslator constructor.
-     * @param JsonTranslator $jsonTranslator
      */
-    public function __construct(JsonTranslator $jsonTranslator)
+    public function __construct(private JsonTranslator $jsonTranslator)
     {
-        $this->jsonTranslator = $jsonTranslator;
     }
 
     /**
@@ -159,7 +155,7 @@ final class FailsafeJsonTranslator implements JsonTranslatorInterface
         $string = trim($string);
         try {
             return $this->jsonTranslator->unserializeArray($string);
-        } catch (JsonUnserializeException $e) {
+        } catch (JsonUnserializeException) {
             return $this->handleUnserializeArrayFailsafeMethod($string);
         }
     }
@@ -175,11 +171,7 @@ final class FailsafeJsonTranslator implements JsonTranslatorInterface
         } catch (JsonUnserializeException $e) {
             throw $e;
         } catch (Throwable $e) {
-            throw new JsonUnserializeException(
-                "Failed to unserialize JSON string using failsafe method: {$e->getMessage()} ; String: $string",
-                (int)$e->getCode(),
-                $e
-            );
+            throw new JsonUnserializeException($e->getMessage(), (int)$e->getCode(), $e);
         }
     }
 
@@ -192,20 +184,21 @@ final class FailsafeJsonTranslator implements JsonTranslatorInterface
         $string = str_replace('\/', self::FORWARD_SLASH_ESCAPE_KEY, $string);
         $string = $this->escapeDoubleQuotesInJsonString($string, self::DOUBLE_QUOTE_ESCAPE_KEY);
         $string = $this->convertToUtf8($string);
-        $string = str_replace(self::DANGEROUS_SEARCHES, self::DANGEROUS_REPLACEMENTS, $string);
-        $array = $this->jsonTranslator->unserializeArray($string);
-        array_walk_recursive(
-            $array,
-            /**
-             * @param mixed $item
-             */
-            static function (&$item): void {
-                if (is_string($item) && !empty($item)) {
-                    $item = str_replace(self::ESCAPE_SEARCHES, self::ESCAPE_REPLACEMENTS, $item);
+        try {
+            return $this->jsonTranslator->unserializeArray($string);
+        } catch (Throwable) {
+            $string = str_replace(self::DANGEROUS_SEARCHES, self::DANGEROUS_REPLACEMENTS, $string);
+            $array = $this->jsonTranslator->unserializeArray($string);
+            array_walk_recursive(
+                $array,
+                static function (mixed &$item): void {
+                    if (is_string($item) && !empty($item)) {
+                        $item = str_replace(self::ESCAPE_SEARCHES, self::ESCAPE_REPLACEMENTS, $item);
+                    }
                 }
-            }
-        );
-        return $array;
+            );
+            return $array;
+        }
     }
 
     /**
@@ -250,9 +243,9 @@ final class FailsafeJsonTranslator implements JsonTranslatorInterface
     /**
      * @inheritDoc
      */
-    public function serializeObject(object $class): string
+    public function serializeObject(object $object): string
     {
-        return $this->jsonTranslator->serializeObject($class);
+        return $this->jsonTranslator->serializeObject($object);
     }
 
     /**

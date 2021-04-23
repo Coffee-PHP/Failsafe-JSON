@@ -25,10 +25,9 @@ declare(strict_types=1);
 
 namespace CoffeePhp\FailsafeJson\Integration;
 
+use CoffeePhp\ComponentRegistry\Contract\ComponentRegistrarInterface;
 use CoffeePhp\Di\Contract\ContainerInterface;
 use CoffeePhp\FailsafeJson\FailsafeJsonTranslator;
-use CoffeePhp\Json\Contract\JsonTranslatorInterface;
-use CoffeePhp\ComponentRegistry\Contract\ComponentRegistrarInterface;
 
 /**
  * Class FailsafeJsonComponentRegistrar
@@ -38,13 +37,18 @@ use CoffeePhp\ComponentRegistry\Contract\ComponentRegistrarInterface;
  */
 final class FailsafeJsonComponentRegistrar implements ComponentRegistrarInterface
 {
+    /**
+     * FailsafeJsonComponentRegistrar constructor.
+     */
+    public function __construct(private ContainerInterface $di)
+    {
+    }
 
     /**
      * @inheritDoc
      */
-    public function register(ContainerInterface $di): void
+    public function register(): void
     {
-        $di->bind(JsonTranslatorInterface::class, FailsafeJsonTranslator::class);
-        $di->bind(FailsafeJsonTranslator::class, FailsafeJsonTranslator::class);
+        $this->di->bind(FailsafeJsonTranslator::class, FailsafeJsonTranslator::class);
     }
 }

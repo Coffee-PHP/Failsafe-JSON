@@ -19,15 +19,15 @@
  * @package coffeephp\failsafe-json
  * @author Danny Damsky <dannydamsky99@gmail.com>
  * @since 2020-08-07
+ * @noinspection StaticInvocationViaThisInspection
  */
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace CoffeePhp\FailsafeJson\Test\Unit;
 
-
 use CoffeePhp\FailsafeJson\FailsafeJsonTranslator;
-use CoffeePhp\Json\Contract\JsonTranslatorInterface;
+use CoffeePhp\Json\Exception\JsonUnserializeException;
 use CoffeePhp\Json\JsonTranslator;
 use CoffeePhp\Json\Test\Unit\JsonTranslatorTest;
 
@@ -40,11 +40,20 @@ use CoffeePhp\Json\Test\Unit\JsonTranslatorTest;
  */
 final class FailsafeJsonTranslatorTest extends JsonTranslatorTest
 {
-    /**
-     * @return JsonTranslatorInterface
-     */
-    protected function getJsonInstance(): JsonTranslatorInterface
+    protected function getJsonInstance(): FailsafeJsonTranslator
     {
         return new FailsafeJsonTranslator(new JsonTranslator());
+    }
+
+    public function testExtremeJsonCase(): void
+    {
+        $translator = new JsonTranslator();
+        $failsafeTranslator = $this->getJsonInstance();
+
+        $json = '\u007b\u000a\u0020\u0020\u0020\u0020\u0022\u05d8\u0027\u05e1\u005c\u0022\u05d8\u0022\u003a\u0020\u0022\u05e9\u05d3\u05d2\u05da\u05dc\u05d7\u05d7\u05e9\u0020\u05ea\u0027\u05d2\u05e9\u05d3\u05d2\u05d7\u05d9\u05e9\u0020\u05d1\u05e2\u005c\u0022\u05de\u0022\u000a\u007d';
+        $this->assertSame(["ט'ס\"ט" => "שדגךלחחש ת'גשדגחיש בע\"מ"], $failsafeTranslator->unserializeArray($json));
+
+        $this->expectException(JsonUnserializeException::class);
+        $translator->unserializeArray($json);
     }
 }
